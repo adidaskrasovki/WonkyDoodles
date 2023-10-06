@@ -24,7 +24,7 @@ else:
 
 # Load model
 filepath = './static/'
-filename = "Wonky_Doodles_CNN2_FFN3_lite10.pth"
+filename = "WonkyDoodles.pth"
 model = tc.load(f"{filepath}{filename}", map_location=device)
 
 app = Flask(__name__)

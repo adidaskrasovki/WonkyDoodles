@@ -34,14 +34,12 @@ function pencil(){
         
     canvas.onmouseup = function(e){
         hold = false;
-        send_img('/eval_img');
-        get_results(category);
+        post_then_get(category);
     };
         
     canvas.onmouseout = function(e){
         if(hold){
-            send_img('/eval_img');
-            get_results(category);
+            post_then_get(category);
         }
         hold = false;
     };
@@ -56,27 +54,26 @@ function pencil(){
 }
 
 
-function dataURLtoBlob(dataURL) {
-    let array, binary, i, len;
-    binary = atob(dataURL.split(',')[1]);
-    array = [];
-    i = 0;
-    len = binary.length;
-    while (i < len) {
-      array.push(binary.charCodeAt(i));
-      i++;
-    }
-    return new Blob([new Uint8Array(array)], {
-      type: 'image/png'
-    });
-};
+// function dataURLtoBlob(dataURL) {
+//     let array, binary, i, len;
+//     binary = atob(dataURL.split(',')[1]);
+//     array = [];
+//     i = 0;
+//     len = binary.length;
+//     while (i < len) {
+//       array.push(binary.charCodeAt(i));
+//       i++;
+//     }
+//     return new Blob([new Uint8Array(array)], {
+//       type: 'image/png'
+//     });
+// };
 
-
-function send_img(target_route){
+async function post_img(target_route){
     var data = canvas.toDataURL("image/png");
     var data = data.replace(/^data:image\/(png|jpg);base64,/, "");
 
-    fetch(target_route, {
+    return fetch(target_route, {
         method: 'POST',
         body: data
     })
@@ -89,10 +86,13 @@ function send_img(target_route){
 }
 
 
-async function get_results(category){
+async function get_results(){
     const response = await fetch('http://localhost:5000/eval_img');
-    var results = await response.json();
+    return await response.json();
+}
 
+
+function populate_table(results, category){
     for(i=0; i<=9; i++){
         for(j=0; j<=1; j++){
             if(j==0) { var unit = ''; }
@@ -105,4 +105,10 @@ async function get_results(category){
             doc.setAttribute("class", color);
         }
     }
+}
+
+
+async function post_then_get(category){
+    await post_img('/eval_img');
+    populate_table(await get_results(), category);
 }

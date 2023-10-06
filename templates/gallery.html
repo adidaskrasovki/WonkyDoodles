@@ -1,24 +1,60 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <body onload="get_image()">
+    <body onload="fill_page()">
     <div class="container-lg">
-        <div class="mt-3 text-center">
+        <div class="my-3 text-center">
             <h2>Gallery</h2>
         </div>
     </div>
 
-    <div class="container-lg">
+    <div class="container-lg text-center">
         <div class="row">
+            
             <div class="col-3">
                 <div class="card mt-2 text-center text-light bg-dark border rounded">
-                    <div class="card-header">
+                    <div class="card-header border-bottom">
                         Title
                     </div>
-                    <img id='card_img'>
+                    <img class="border rounded border-dark" id='card_img_1' style="align-self: center">
                 </div>
             </div>
+
+            <div class="col-3">
+                <div class="card mt-2 text-center text-light bg-dark border rounded">
+                    <div class="card-header border-bottom">
+                        Title
+                    </div>
+                    <img class="border rounded border-dark" id='card_img_2' style="align-self: center">
+                </div>
+            </div>
+
+            <div class="col-3">
+                <div class="card mt-2 text-center text-light bg-dark border rounded">
+                    <div class="card-header border-bottom">
+                        Title
+                    </div>
+                    <img class="border rounded border-dark" id='card_img_3' style="align-self: center">
+                </div>
+            </div>
+
+            <div class="col-3">
+                <div class="card mt-2 text-center text-light bg-dark border rounded">
+                    <div class="card-header border-bottom">
+                        Title
+                    </div>
+                    <img class="border rounded border-dark" id='card_img_4' style="align-self: center">
+                </div>
+            </div>
+
         </div>
+
+            <div class="text-center mt-5">
+                <btn id="btn_left" onclick="click_left_btn()" class="btn bg-danger" style="visibility: hidden">&lt</btn>
+                <p id="pagenumber" class="mx-3" style="display:inline">1</p>
+                <btn id="btn_right" onclick="click_right_btn()" class="btn bg-danger">&gt</btn>
+            </div>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
