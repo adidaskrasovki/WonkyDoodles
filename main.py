@@ -27,19 +27,18 @@ filepath = './static/'
 filename = "WonkyDoodles.pth"
 model = tc.load(f"{filepath}{filename}", map_location=device)
 
+# gallery list
+gallery_list = []
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a7c8458ab710af8c4956f350062c63e5'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
-# results = []
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 @app.route('/home')
 def home():
-    # global results
-    results = []
-    return render_template('home.html', title="Paint", results=results, category=get_category(randint(0,344), './static/label_list.txt'))
+    return render_template('home.html', title="Draw", category=get_category(randint(0,344), './static/label_list.txt'))
 
 
 @app.route('/gallery', methods=['GET'])
@@ -67,28 +66,41 @@ def eval_img():
 
 
 @app.route('/img_handler', methods=['GET', 'POST'])
-def save_img():
+def img_handler():
+    global gallery_list
+
     if request.method == 'POST':
         image = request.data
         image = base64.b64decode(image)        
         image = Image.open(BytesIO(image)).convert('1')
-        time=datetime.now()
-        image.save(f"./gallery/{datetime.now().strftime('%m%d%Y-%H%M%S-%f')}.png")
+        time = datetime.now()
+        image.save(f"./gallery/{time.strftime('%m%d%Y-%H%M%S-%f')}.png")
+
+        gallery_list.insert(0, f"{time.strftime('%m%d%Y-%H%M%S-%f')}.png")
 
         return "Success"
+    
     else:
-        img = Image.open("./gallery/09252023-222902-931753.png")
-        file_object = BytesIO()
-        img.save(file_object, format='png')
-        file_object.seek(0)
-        file_object = base64.b64encode(file_object.getvalue()).decode()
+        try:
+            args = request.args
+            img = Image.open(f"./gallery/{gallery_list[int(args['idx'])]}")
+            file_object = BytesIO()
+            img.save(file_object, format='png')
+            file_object.seek(0)
+            file_object = base64.b64encode(file_object.getvalue()).decode()       
 
-
-        with open('get.txt', 'w') as f:
-            f.write(file_object)       
-
-        return file_object
+            return file_object
+        
+        except IndexError:
+            return '404'
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    # Populate gallery filename list
+    gallery_list = listdir('./gallery')
+    gallery_list.pop(0)
+    gallery_list.reverse()
+
+    # Run Flask
+    app.run()

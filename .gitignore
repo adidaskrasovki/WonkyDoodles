@@ -1,6 +1,7 @@
 __pycache__/
 runs/
 gallery/.
+.vscode/
 test.py
 get.txt
 post.txt
