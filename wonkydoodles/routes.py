@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, flash, redirect, request
-from wonkydoodles import LocalStore, app, model, device, gallery_list, len_gallery_list
+from wonkydoodles import LocalStore, app, db, model, device, len_db
+from wonkydoodles.models import Doodle, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
 
 from PIL import Image
@@ -46,39 +47,46 @@ def eval_img():
 
 @app.route('/img_handler', methods=['GET', 'POST'])
 def img_handler():
-    global gallery_list
-    global len_gallery_list
+    global len_db
 
     if request.method == 'POST':
         img = request.json
-
         img['timestamp'] = datetime.timestamp(datetime.utcnow())
-        filename = f"{img['timestamp']}_{img['category']}_{'r' if img['recognized'] else 'u'}"
 
-        img_lite = {
-            "category": img['category'],
-            "recognized": img['recognized'],
-            "base64": img['base64']
-        }
+        doodle = Doodle(category = img['category'],
+                        recognized = img['recognized'],
+                        timestamp = img['timestamp'],
+                        countrycode = img['countrycode'],
+                        base64 = img['base64']
+                        )
+        db.session.add(doodle)
+        db.session.commit()
+        
+        for element in img['vectorlist']:
+            vector = Vector(x = element['x'],
+                            y = element['y'],
+                            t = element['t'],
+                            doodle_id = doodle.id
+                    )
+            db.session.add(vector)
+        db.session.commit()
 
-        with open(f"./wonkydoodles/database/{filename}.json", "w") as f:
-            json.dump(img, f)
-        with open(f"./wonkydoodles/gallery/{filename}_l.json", "w") as f:
-            json.dump(img_lite, f)
-
-        gallery_list.insert(0, f"{filename}_l.json")
-        len_gallery_list += 1
+        len_db += 1
 
         return "Success"
     
     else: # if method == 'GET':
         try:
             args = request.args
+            idx = int(args['idx'])
 
-            with open(f"./wonkydoodles/gallery/{gallery_list[int(args['idx'])]}", 'r') as f:
-                 json_img = json.load(f)
+            doodle = {'category': db.session.get(Doodle, len_db - idx).category,
+                      'recognized': db.session.get(Doodle, len_db - idx).recognized,
+                      'base64': db.session.get(Doodle, len_db - idx).base64                   
+                      }
+            doodle = json.dumps(doodle, indent = 1) 
 
-            return json_img
+            return doodle
                 
-        except IndexError:
+        except:
             return '404'
