@@ -73,19 +73,18 @@ def img_handler():
 
     if request.method == 'POST':
         img = request.json
+
         img['timestamp'] = datetime.timestamp(datetime.utcnow())
+        filename = f"{img['timestamp']}_{img['category']}_{'r' if img['recognized'] else 'u'}"
 
         img_lite = {
             "category": img['category'],
-            "timestamp": img['timestamp'],
             "recognized": img['recognized'],
             "base64": img['base64']
         }
-        filename = f"{img['timestamp']}_{img['category']}_{'r' if img['recognized'] else 'u'}"
 
         with open(f"./database/{filename}.json", "w") as f:
             json.dump(img, f)
-
         with open(f"./gallery/{filename}_l.json", "w") as f:
             json.dump(img_lite, f)
 
