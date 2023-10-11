@@ -1,5 +1,7 @@
+#### IMPORTS ####
+#################
+
 from flask import Flask, render_template, url_for, flash, redirect, request
-from forms import RegistrationForm, LoginForm
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from random import randint
@@ -12,30 +14,22 @@ from os import listdir
 import torch as tc
 from evaluate import *
 
+#### CLASSES ####
+#################
+
 class LocalStore:
     def __call__(self, f: callable):
         f.__globals__[self.__class__.__name__] = self
         return f
 
-# CUDA
-if tc.cuda.is_available():
-    device = tc.device("cuda")
-else:
-    device = tc.device("cpu")
-
-# Load model
-filepath = './static/'
-filename = "WonkyDoodles.pth"
-model = tc.load(f"{filepath}{filename}", map_location=device)
-
-# gallery list
-gallery_list = []
-len_gallery_list = 0
-
+# GLOBAL Flask config / SQLite
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a7c8458ab710af8c4956f350062c63e5'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/WonkyDoodles.db'
 db = SQLAlchemy(app)
+
+#### ROUTES ####
+################
 
 @app.route('/', methods=['GET'])
 @app.route('/home')
@@ -68,7 +62,7 @@ def eval_img():
 
         LocalStore.results = eval_drawing(image, model, device)
         return "success"
-    else:
+    else: # if method = 'GET':
         return LocalStore.results
 
 
@@ -79,6 +73,8 @@ def img_handler():
 
     if request.method == 'POST':
         img = request.json
+        img['timestamp'] = datetime.timestamp(datetime.utcnow())
+
         img_lite = {
             "category": img['category'],
             "timestamp": img['timestamp'],
@@ -110,8 +106,18 @@ def img_handler():
         except IndexError:
             return '404'
 
+##### MAIN #####
+################
 
 if __name__ == "__main__":
+
+    # CUDA
+    device = tc.device('cuda') if tc.cuda.is_available() else tc.device('cpu')
+
+    # Load model
+    filepath = './static/'
+    filename = "WonkyDoodles.pth"
+    model = tc.load(f"{filepath}{filename}", map_location=device)
 
     # Populate gallery filename list
     gallery_list = listdir('./gallery')

@@ -16,7 +16,6 @@ async function fill_page(){
     // Check if first image of the next page exists and
     // hide right_btn if not:
     is_in_range = await get_img(4 * (pagenumber + 1));
-    console.log(typeof is_in_range);
     if (is_in_range != 404){ right_btn.style = 'visibility:show'; }
     else { right_btn.style = 'visibility:hidden'; };
 
