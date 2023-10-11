@@ -12,7 +12,8 @@ class Image(db.model):
     vectorlists = db.relationship('Vectorlist', backref='Image', lazy=True)
 
 class Vectorlist(db.model):
-    t = db.column(db.Numeric, primary_key=True)
+    id = db.column(db.Integer, primary_key=True)
     x = db.column(db.Integer, nullable=False, default=0)
     y = db.column(db.Integer, nullable=False, default=0)
+    t = db.column(db.Numeric, nullable=False, default=0)
     image_ig = db.column(db.Integer, db.ForeignKey('image.id'), nullable=False)
