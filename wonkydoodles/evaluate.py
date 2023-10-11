@@ -129,7 +129,7 @@ def eval_drawing(img, model, device='cpu'):
 
         prob_list = []
         for idx, category in enumerate(otpt):
-            prob_list.append((get_category(idx, './static/label_list.txt'), round(100 * category.item(), 2)))
+            prob_list.append((get_category(idx, './wonkydoodles/static/label_list.txt'), round(100 * category.item(), 2)))
 
         prob_list.sort(key=lambda x: x[1], reverse=True)
         results = prob_list[:10]

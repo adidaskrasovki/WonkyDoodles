@@ -1,35 +1,13 @@
-#### IMPORTS ####
-#################
-
 from flask import Flask, render_template, url_for, flash, redirect, request
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from random import randint
-import json
+from wonkydoodles import LocalStore, app, model, device, gallery_list, len_gallery_list
+from wonkydoodles.evaluate import get_category, eval_drawing
 
 from PIL import Image
 import base64
 from io import BytesIO
-from os import listdir
-import torch as tc
-from evaluate import *
-
-#### CLASSES ####
-#################
-
-class LocalStore:
-    def __call__(self, f: callable):
-        f.__globals__[self.__class__.__name__] = self
-        return f
-
-# GLOBAL Flask config / SQLite
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'a7c8458ab710af8c4956f350062c63e5'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/WonkyDoodles.db'
-db = SQLAlchemy(app)
-
-#### ROUTES ####
-################
+from datetime import datetime
+from random import randint
+import json
 
 @app.route('/', methods=['GET'])
 @app.route('/home')
@@ -49,7 +27,7 @@ def about():
 
 @app.route('/stage_category', methods=['GET'])
 def stage_category():
-    return get_category(randint(0,344), './static/label_list.txt')
+    return get_category(randint(0,344), './wonkydoodles/static/label_list.txt')
 
 
 @app.route('/eval_img', methods=['GET',  'POST'])
@@ -83,9 +61,9 @@ def img_handler():
             "base64": img['base64']
         }
 
-        with open(f"./database/{filename}.json", "w") as f:
+        with open(f"./wonkydoodles/database/{filename}.json", "w") as f:
             json.dump(img, f)
-        with open(f"./gallery/{filename}_l.json", "w") as f:
+        with open(f"./wonkydoodles/gallery/{filename}_l.json", "w") as f:
             json.dump(img_lite, f)
 
         gallery_list.insert(0, f"{filename}_l.json")
@@ -97,32 +75,10 @@ def img_handler():
         try:
             args = request.args
 
-            with open(f"./gallery/{gallery_list[int(args['idx'])]}", 'r') as f:
+            with open(f"./wonkydoodles/gallery/{gallery_list[int(args['idx'])]}", 'r') as f:
                  json_img = json.load(f)
 
             return json_img
                 
         except IndexError:
             return '404'
-
-##### MAIN #####
-################
-
-if __name__ == "__main__":
-
-    # CUDA
-    device = tc.device('cuda') if tc.cuda.is_available() else tc.device('cpu')
-
-    # Load model
-    filepath = './static/'
-    filename = "WonkyDoodles.pth"
-    model = tc.load(f"{filepath}{filename}", map_location=device)
-
-    # Populate gallery filename list
-    gallery_list = listdir('./gallery')
-    gallery_list.pop(0)
-    gallery_list.reverse()
-    len_gallery_list = len(gallery_list)
-
-    # Run Flask
-    app.run()

@@ -1,5 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from wonkydoodles import db
 
 
 class Image(db.model):
