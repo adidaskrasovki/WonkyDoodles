@@ -12,7 +12,8 @@ ctx.strokeStyle = "white";
 ctx.rect(0, 0, canvas.width, canvas.height);
 ctx.fillStyle = "black";
 ctx.fill();
-var vectorlist = [];
+var stroke = [];
+var strokelist = [];
 
 
 // function dataURLtoBlob(dataURL) {
@@ -57,7 +58,7 @@ async function post_img(target_route){
             category: category,
             recognized: result_list[0][0] == category,
             countrycode: getCountry(),
-            vectorlist: vectorlist,
+            strokelist: strokelist,
             base64: base64
         }),
         headers: {
@@ -125,12 +126,16 @@ function pencil(){
     };
         
     canvas.onmouseup = function(e){
+		strokelist.push(stroke.map((x) => x));
+		stroke.length = 0;
         post_then_get(category);
         hold = false;
     };
         
     canvas.onmouseout = function(e){
         if(hold){
+			strokelist.push(stroke.map((x) => x));
+			stroke.length = 0;
             post_then_get(category);
         }
         hold = false;
@@ -139,7 +144,7 @@ function pencil(){
     function draw(){
         ctx.lineTo(curX, curY);
         ctx.stroke();
-        vectorlist.push({"x": Math.floor(curX), "y": Math.floor(curY), "t": Date.now() - start_time});
+        stroke.push({"x": Math.floor(curX), "y": Math.floor(curY), "t": Date.now() - start_time});
     }
 };
 
@@ -155,12 +160,14 @@ function next(){
     if (chk_save.checked == true && empty == false){
         post_img('/img_handler');
     };
+	clearpage();
     set_category();
-    clearpage();
-    empty = true;
 };
 
 function clearpage(){
+	// clear lists
+	strokelist.length = 0;
+
     // clear canvas
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     empty = true;
@@ -175,6 +182,7 @@ function clearpage(){
 };
 
 // IF POSSIBLE, KEEP THIS FUNCTION MINIMIZED/CLOSED AT ALL TIMES IN YOUR IDE!!!!
+//
 // unfortunately, .js does not have an easy way to import other .js files. This is the workaround.
 function getCountry() {
 	var timezones = {

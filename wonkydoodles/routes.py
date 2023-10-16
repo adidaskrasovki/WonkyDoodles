@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, flash, redirect, request
 from wonkydoodles import LocalStore, app, db, model, device, len_db
-from wonkydoodles.models import Doodle, Vector
+from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
 
 from PIL import Image
@@ -62,14 +62,19 @@ def img_handler():
         db.session.add(doodle)
         db.session.commit()
         
-        for element in img['vectorlist']:
-            vector = Vector(x = element['x'],
-                            y = element['y'],
-                            t = element['t'],
-                            doodle_id = doodle.id
-                    )
-            db.session.add(vector)
-        db.session.commit()
+        for stroke_iter in img['strokelist']:
+            stroke = Stroke(doodle_id = doodle.id                     
+                            )
+            db.session.add(stroke)
+            db.session.commit()
+            for vector_iter in stroke_iter:
+                vector = Vector(x = vector_iter['x'],
+                                y = vector_iter['y'],
+                                t = vector_iter['t'],
+                                stroke_id = stroke.id
+                                )
+                db.session.add(vector)
+            db.session.commit()
 
         len_db += 1
 
