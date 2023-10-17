@@ -9,7 +9,8 @@ class Doodle(db.Model):
     timestamp = db.Column(db.String(17), nullable=False, default=0)
     countrycode = db.Column(db.String(2), nullable=False, default = '??')
     base64 = db.Column(db.Text, nullable=False, default='??')
-    strokelist = db.Relationship('Stroke', backref='Doodle', lazy=True)
+
+    strokelist = db.Relationship('Stroke', backref="Doodle, lazy='noload'", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"category: {self.category}, recognized: {self.recognized}, timestamp: {self.timestamp}, country: {self.countrycode}"
@@ -18,7 +19,7 @@ class Doodle(db.Model):
 class Stroke(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     doodle_id = db.Column(db.Integer, db.ForeignKey('doodle.id'), nullable=False)
-    stroke = db.Relationship('Vector', backref='Stroke', lazy=True)
+    stroke = db.Relationship('Vector', backref="Stroke, lazy='noload'", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"id: {self.id}, , doodle_id: {self.doodle_id}"

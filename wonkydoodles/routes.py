@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for, flash, redirect, request
 from wonkydoodles import LocalStore, app, db, model, device, len_db
 from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
+from wonkydoodles.validate import Validate
 
 from PIL import Image
 import base64
@@ -9,6 +10,7 @@ from io import BytesIO
 from datetime import datetime
 from random import randint
 import json
+
 
 @app.route('/', methods=['GET'])
 @app.route('/home')
@@ -51,34 +53,50 @@ def img_handler():
 
     if request.method == 'POST':
         img = request.json
-        img['timestamp'] = datetime.timestamp(datetime.utcnow())
 
-        doodle = Doodle(category = img['category'],
-                        recognized = img['recognized'],
-                        timestamp = img['timestamp'],
-                        countrycode = img['countrycode'],
-                        base64 = img['base64']
-                        )
-        db.session.add(doodle)
-        db.session.commit()
-        
-        for stroke_iter in img['strokelist']:
-            stroke = Stroke(doodle_id = doodle.id                     
+        try:
+            if not (Validate.category(img['category'], './wonkydoodles/static/label_list.txt') and
+                Validate.recognized(img['recognized']) and
+                Validate.countrycode(img['countrycode']) and
+                Validate.b64(img['base64'])): raise
+
+            img['timestamp'] = datetime.timestamp(datetime.utcnow())
+
+            # Add Doodle Block
+            doodle = Doodle(category = img['category'],
+                            recognized = img['recognized'],
+                            timestamp = img['timestamp'],
+                            countrycode = img['countrycode'],
+                            base64 = img['base64']
                             )
-            db.session.add(stroke)
-            db.session.commit()
-            for vector_iter in stroke_iter:
-                vector = Vector(x = vector_iter['x'],
-                                y = vector_iter['y'],
-                                t = vector_iter['t'],
-                                stroke_id = stroke.id
+            db.session.add(doodle)
+        
+            # Add Stroke Block
+            for stroke_iter in img['strokelist']:
+
+                stroke = Stroke(doodle_id = doodle.id                     
                                 )
-                db.session.add(vector)
+                doodle.strokelist.append(stroke)
+
+                # Add Vector Block
+                for vector_iter in stroke_iter:
+
+                    if not Validate.vector(vector_iter, range(0, 256)): raise
+
+                    vector = Vector(x = vector_iter['x'],
+                                    y = vector_iter['y'],
+                                    t = vector_iter['t'],
+                                    stroke_id = stroke.id
+                                    )
+                    stroke.stroke.append(vector)
+
+        except:
+            db.session.rollback()
+            return "failure"
+        else:
             db.session.commit()
-
-        len_db += 1
-
-        return "Success"
+            len_db += 1
+            return "success"
     
     else: # if method == 'GET':
         try:
