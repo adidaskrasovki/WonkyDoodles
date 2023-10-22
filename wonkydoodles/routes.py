@@ -16,9 +16,9 @@ import json
 
 
 @app.route('/', methods=['GET'])
-@app.route('/home')
-def home():
-    return render_template('home.html', title="Draw")
+@app.route('/draw')
+def draw():
+    return render_template('draw.html', title="Draw")
 
 
 @app.route('/gallery', methods=['GET'])
