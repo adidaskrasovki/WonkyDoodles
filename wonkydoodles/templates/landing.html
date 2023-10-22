@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    
+    <div class=" container text-center">
+        <h1 class="my-5">Welcome!</h1>
+
+        <p class="my-5">Welcome to Wonkydoodles, a "Quick, Draw!" clone for cool and attractive people! All of this is very much work in progress so don't be too harsh about what you're seeing. For more info check out the About page!</p>
+
+        <a class="btn btn-danger my-5" href="{{ url_for('draw') }}">Got it!</a>
+    </div>
+
+{% endblock content %}

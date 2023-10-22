@@ -14,7 +14,13 @@ from datetime import datetime
 from random import randint
 import json
 
-@app.route('/download', methods=['GET'])
+
+@app.route('/')
+def landing():
+    return render_template('landing.html')
+
+
+@app.route('/download')
 def download():
     return render_template('download.html', title='Download Database')
 
@@ -24,7 +30,7 @@ def gallery():
     return render_template('gallery.html', title='Gallery')
 
 
-@app.route('/', methods=['GET'])
+#@app.route('/', methods=['GET'])
 @app.route('/draw')
 def draw():
     return render_template('draw.html', title="Draw")
