@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, flash, redirect, request, send_file
+from flask import Flask, render_template, url_for, flash, redirect, request, send_from_directory
 from wonkydoodles import LocalStore, app, db, model, device, len_db
 from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
@@ -35,9 +35,9 @@ def about():
     return render_template('about.html', title="About")
 
 
-# @app.route('/reports/<path:path>')
-# def send_report(path):
-#     return send_file('reports', path)
+@app.route('/download/<path:path>')
+def download_database(path):
+    return send_from_directory('database', 'wonkydoodles.db', as_attachment=True)
 
 
 @app.route('/stage_category', methods=['GET'])
@@ -74,6 +74,7 @@ def img_handler():
 
             img['timestamp'] = datetime.timestamp(datetime.utcnow())
 
+            # Add POSTed .json to Database
             # Add Doodle Block
             doodle = Doodle(category = img['category'],
                             recognized = img['recognized'],
@@ -105,6 +106,7 @@ def img_handler():
         except:
             db.session.rollback()
             return "failure"
+        
         else:
             db.session.commit()
             len_db += 1
