@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, flash, redirect, request, send_file
 from wonkydoodles import LocalStore, app, db, model, device, len_db
 from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
@@ -14,11 +14,9 @@ from datetime import datetime
 from random import randint
 import json
 
-
-@app.route('/', methods=['GET'])
-@app.route('/draw')
-def draw():
-    return render_template('draw.html', title="Draw")
+@app.route('/download', methods=['GET'])
+def download():
+    return render_template('download.html', title='Download Database')
 
 
 @app.route('/gallery', methods=['GET'])
@@ -26,9 +24,20 @@ def gallery():
     return render_template('gallery.html', title='Gallery')
 
 
+@app.route('/', methods=['GET'])
+@app.route('/draw')
+def draw():
+    return render_template('draw.html', title="Draw")
+
+
 @app.route('/about')
 def about():
     return render_template('about.html', title="About")
+
+
+# @app.route('/reports/<path:path>')
+# def send_report(path):
+#     return send_file('reports', path)
 
 
 @app.route('/stage_category', methods=['GET'])
