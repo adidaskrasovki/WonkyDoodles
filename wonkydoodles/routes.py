@@ -4,7 +4,10 @@ from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
 from wonkydoodles.validate import Validate
 
+import warnings
+warnings.filterwarnings("error")
 from PIL import Image
+Image.MAX_IMAGE_PIXELS = 65536
 import base64
 from io import BytesIO
 from datetime import datetime

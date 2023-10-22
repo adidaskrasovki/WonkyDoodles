@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 from os import listdir, path
 import torch as tc
+# from PIL import Image
+
 
 #### CLASSES ####
 #################
