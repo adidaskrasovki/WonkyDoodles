@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <div class="container text-center">
-        <h1 class="my-3 text-center">Download the Wonkydoodles Dataset!</h1>
+    <div class="container text-center mb-5">
+        <h1 class="my-5 text-center">Download the Wonkydoodles Dataset!</h1>
         
         <div class="container">
             <a href="/download/wonkydoodles.db" id="btn_download" class=" btn btn-lg bg-danger my-3">Download</a>
@@ -102,12 +102,12 @@
                 </table>
             </div>
         </div>
-
-        <p>Basically, a Vector is a Child of a Stroke, which in turn is a Child of a Doodle. That way, for every Doodle, you can iterate through its Strokes and the Vectors associated to this Stroke to, for example, draw the Doodle or feed it to an RNN.</p>
     </div>
 
-    <p>The Wonkydoodles Dataset is more or less consistent with he <a href="https://github.com/googlecreativelab/quickdraw-dataset">"Quick, Draw!" Dataset.</a></p>
+    <p class="my-3">Basically, a Vector is a Child of a Stroke, which in turn is a Child of a Doodle. That way, for every Doodle, you can iterate through its Strokes and the Vectors associated to this Stroke to, for example, draw the Doodle or feed it to an RNN.</p>
 
-    <p>The Wonkydoodles Database is available under the <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International license</a>, which in plain english means that you can use this for any, even commercial, purpose. Just shout me out when you do use it.</p>
+    <p class="my-3">The Wonkydoodles Dataset is more or less consistent with he <a href="https://github.com/googlecreativelab/quickdraw-dataset">"Quick, Draw!" Dataset.</a></p>
+
+    <p class="my-3">The Wonkydoodles Database is available under the <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International license</a>, which in plain english means that you can use this for any, even commercial, purpose. Just shout me out when you do use it.</p>
     
 {% endblock content %}
