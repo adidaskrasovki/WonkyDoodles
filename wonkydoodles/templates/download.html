@@ -15,98 +15,114 @@
         <div class="row">
 
             <div class="container col-4 my-3">
-                <table class="table table-dark table-striped">
-                    <thead>
-                        <tr>
-                            <td>Doodle</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ID</td>
-                            <td>Int</td>
-                        </tr>
-                        <tr>
-                            <td>Category</td>
-                            <td>String</td>
-                        </tr>
-                        <tr>
-                            <td>Recognized</td>
-                            <td>Bool</td>
-                        </tr>
-                        <tr>
-                            <td>Timestamp</td>
-                            <td>String</td>
-                        </tr>
-                        <tr>
-                            <td>Countrycode</td>
-                            <td>Two chars</td>
-                        </tr>
-                        <tr>
-                            <td>Base64</td>
-                            <td>base64 String</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="card mt-2 text-light bg-dark">
+
+                    <div class="card-header text-center border-bottom px-0">
+                        Doodle
+                    </div>
+
+                    <div class="card-body p-0">
+
+                        <table class="table table-dark table-striped mb-0">
+                            <tbody>
+                                <tr>
+                                    <td>ID</td>
+                                    <td>Int</td>
+                                </tr>
+                                <tr>
+                                    <td>category</td>
+                                    <td>String</td>
+                                </tr>
+                                <tr>
+                                    <td>recognized</td>
+                                    <td>Bool</td>
+                                </tr>
+                                <tr>
+                                    <td>timestamp</td>
+                                    <td>String</td>
+                                </tr>
+                                <tr>
+                                    <td>countrycode</td>
+                                    <td>Two chars</td>
+                                </tr>
+                                <tr>
+                                    <td>base64</td>
+                                    <td>String</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
             </div>
 
             <div class="container col-4 my-3">
-                <table class="table table-dark table-striped">
-                    <thead>
-                        <tr>
-                            <td>Stroke</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ID</td>
-                            <td>Int</td>
-                        </tr>
-                        <tr>
-                            <td>Doodle_ID</td>
-                            <td>Int</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="card mt-2 text-light bg-dark">
+
+                    <div class="card-header text-center border-bottom px-0">
+                        Stroke
+                    </div>
+
+                    <div class="card-body p-0">
+
+                        <table class="table table-dark table-striped mb-0">
+                            <tbody>
+                                <tr>
+                                    <td>ID</td>
+                                    <td>Int</td>
+                                </tr>
+                                <tr>
+                                    <td>Doodle_ID</td>
+                                    <td>Int</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div class="container col-4 my-3">
-                <table class="table table-dark table-striped">
-                    <thead>
-                        <tr>
-                            <td>Vector</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ID</td>
-                            <td>Int</td>
-                        </tr>
-                        <tr>
-                            <td>Stroke_ID</td>
-                            <td>Int</td>
-                        </tr>
-                        <tr>
-                            <td>x</td>
-                            <td>Int</td>
-                        </tr>
-                        <tr>
-                            <td>y</td>
-                            <td>Int</td>
-                        </tr>
-                        <tr>
-                            <td>t</td>
-                            <td>Int</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="card mt-2 text-light bg-dark">
+
+                    <div class="card-header text-center border-bottom px-0">
+                        Vector
+                    </div>
+
+                    <div class="card-body p-0">
+
+                        <table class="table table-dark table-striped mb-0">
+                            <tbody>
+                                <tr>
+                                    <td>ID</td>
+                                    <td>Int</td>
+                                </tr>
+                                <tr>
+                                    <td>stroke_ID</td>
+                                    <td>Int</td>
+                                </tr>
+                                <tr>
+                                    <td>x</td>
+                                    <td>Int</td>
+                                </tr>
+                                <tr>
+                                    <td>y</td>
+                                    <td>Int</td>
+                                </tr>
+                                <tr>
+                                    <td>t</td>
+                                    <td>Int</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <p class="my-3">Basically, a Vector is a Child of a Stroke, which in turn is a Child of a Doodle. That way, for every Doodle, you can iterate through its Strokes and the Vectors associated to this Stroke to, for example, draw the Doodle or feed it to an RNN.</p>
 
-    <p class="my-3">The Wonkydoodles Dataset is more or less consistent with he <a href="https://github.com/googlecreativelab/quickdraw-dataset">"Quick, Draw!" Dataset.</a></p>
+    <p class="my-3">The Wonkydoodles Dataset is more or less consistent with he <a href="https://github.com/googlecreativelab/quickdraw-dataset">"Quick, Draw!" Dataset</a>, so visit them for more information about the data.</p>
 
     <p class="my-3">The Wonkydoodles Database is available under the <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International license</a>, which in plain english means that you can use this for any, even commercial, purpose. Just shout me out when you do use it.</p>
     
