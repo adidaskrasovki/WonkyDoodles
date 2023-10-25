@@ -4,6 +4,8 @@ var result_list = [];
 
 var canvas = document.getElementById("canvas");
 var ctx = this.canvas.getContext("2d");
+var canvas2 = document.getElementById("canvas2");
+var ctx2 = this.canvas2.getContext("2d");
 var curX, curY, prevX, prevY;
 var hold = false;
 var empty = true;
@@ -12,102 +14,99 @@ ctx.strokeStyle = "white";
 ctx.rect(0, 0, canvas.width, canvas.height);
 ctx.fillStyle = "black";
 ctx.fill();
+ctx2.lineWidth = 1;
+ctx2.strokeStyle = "white";
+ctx2.rect(0, 0, canvas2.width, canvas2.height);
+ctx2.fillStyle = "black";
+ctx2.fill();
 var stroke = [];
 var strokelist = [];
 var mapped_strokelist = [];
-var boundaries = [0,0,0,0]; // == [x_min, x_max, y_min, y_max]
+var boundaries = {'x_min': 0, 'x_max': 0, 'y_min': 0, 'y_max': 0};
 
 
-function set_xy_boundaries(){
+function set_canvas_boundaries(){
 	var len_stroke = stroke.length;
 	
 	if (strokelist.length == 1){
-		boundaries[0] = stroke[0]['x'];
-		boundaries[1] = stroke[0]['x'];
-		boundaries[2] = stroke[0]['y'];
-		boundaries[3] = stroke[0]['y'];
-	}
+		boundaries['x_min'] = stroke[0]['x'];
+		boundaries['x_max'] = stroke[0]['x'];
+		boundaries['y_min'] = stroke[0]['y'];
+		boundaries['y_max'] = stroke[0]['y'];
+	};
 
 	for (j=0; j<len_stroke; j++){
-		if(stroke[j]['x'] < boundaries[0]){
-			boundaries[0] = stroke[j]['x'];
-		} else if(stroke[j]['x'] > boundaries[1]){
-			boundaries[1] = stroke[j]['x'];
-		}
-		if(stroke[j]['y'] < boundaries[2]){
-			boundaries[2] = stroke[j]['y'];
-		} else if(stroke[j]['y'] > boundaries[3]){
-			boundaries[3] = stroke[j]['y'];
-		}
-	}
-}
-
-
-function translate_and_scale(){
-	var len_strokelist = strokelist.length;
-	mapped_strokelist.length = 0;
-	mapped_strokelist = structuredClone(strokelist);
-
-	// scale all strokes
-	for (i=0; i<len_strokelist; i++){
-		var len_stroke = strokelist[i].length;
-		for (j=0; j<len_stroke; j++){
-			if (boundaries[1] > boundaries[3]){
-				mapped_strokelist[i][j]['x'] = Math.round((strokelist[i][j]['x'] - boundaries[0]) / (boundaries[1] - boundaries[0]) * 255);
-				mapped_strokelist[i][j]['y'] = Math.round((strokelist[i][j]['y'] - boundaries[2]) / (boundaries[1] - boundaries[0]) * 255);
-			} else { // if y_max >= x_max
-				mapped_strokelist[i][j]['x'] = Math.round((strokelist[i][j]['y'] - boundaries[0]) / (boundaries[3] - boundaries[2]) * 255);
-				mapped_strokelist[i][j]['y'] = Math.round((strokelist[i][j]['y'] - boundaries[2]) / (boundaries[3] - boundaries[2]) * 255);
-			}
-		}
-	}
-}
-
-function remove_duplicates(){
-	var len_strokelist = mapped_strokelist.length;
-	
-	for (i=0; i<len_strokelist; i++){
-		len_stroke = mapped_strokelist[i].length;
-		for (j=0; j<len_stroke-1; j++){
-			if (mapped_strokelist[i][j]['x'] == mapped_strokelist[i][j+1]['x']){
-				if (mapped_strokelist[i][j]['y'] == mapped_strokelist[i][j+1]['y']){
-					mapped_strokelist[i].splice(j, 1);
-					j = j - 1;
-					len_stroke = len_stroke - 1;
-				}
-			}
-		}
-	}
-}
-
-
-function resize_strokelist(){
-	set_xy_boundaries();
-	translate_and_scale();
-	remove_duplicates();
-}
-
-
-async function send_to_eval(){
-    var base64 = canvas.toDataURL("image/png");
-    base64 = base64.replace(/^data:image\/(png|jpg);base64,/, "");
-
-    return fetch('/eval_img', {
-        method: 'POST',
-        body: base64
-    })
-    .then(response => {
-        console.log(response)
-    })
-    .catch(error => {
-        console.error(error)
-    });
+		if(stroke[j]['x'] < boundaries['x_min']){
+			boundaries['x_min'] = stroke[j]['x'];
+		} else if(stroke[j]['x'] > boundaries['x_max']){
+			boundaries['x_max'] = stroke[j]['x'];
+		};
+		if(stroke[j]['y'] < boundaries['y_min']){
+			boundaries['y_min'] = stroke[j]['y'];
+		} else if(stroke[j]['y'] > boundaries['y_max']){
+			boundaries['y_max'] = stroke[j]['y'];
+		};
+	};
 };
 
 
-async function get_results(){
-    const response = await fetch('/eval_img');
-    return await response.json();
+function resize(strokes, x, y, x_org, y_org, scaling){
+
+	var new_strokes = translate(strokes, x, y);
+	new_strokes = scale(new_strokes, x_org, y_org, scaling);
+	new_strokes = remove_duplicates(new_strokes);
+
+	return new_strokes;
+
+
+	function translate(strokes, x, y){
+		var len_strokes = strokes.length;
+		var new_strokes = structuredClone(strokes);
+		for (i=0; i<len_strokes; i++){
+			var len_stroke = strokes[i].length;
+			for (j=0; j<len_stroke; j++){
+				new_strokes[i][j]['x'] = strokes[i][j]['x'] - x;
+				new_strokes[i][j]['y'] = strokes[i][j]['y'] - y;
+			};
+		};
+		return new_strokes
+	};
+
+
+	function scale(strokes, x_org, y_org, scaling){
+		var len_strokes = strokes.length;
+		var new_strokes = structuredClone(strokes);
+		for (i=0; i<len_strokes; i++){
+			var len_stroke = strokes[i].length;
+			for (j=0; j<len_stroke; j++){
+				new_strokes[i][j]['x'] = (strokes[i][j]['x'] - x_org) * scaling;
+				new_strokes[i][j]['y'] = (strokes[i][j]['y'] - y_org) * scaling;
+			};
+		};
+		return new_strokes
+	};
+
+
+	function remove_duplicates(strokes){
+		var new_strokes = structuredClone(strokes);
+		var len_strokes = new_strokes.length;
+
+		for (i=0; i<len_strokes; i++){
+			var len_stroke = new_strokes[i].length;
+			for (j=0; j<len_stroke-1 ;j++){
+				if (new_strokes[i][j]['x'] == new_strokes[i][j+1]['x']){
+					if (new_strokes[i][j]['y'] == new_strokes[i][j+1]['y']){
+						new_strokes[i].splice(j, 1);
+						j = j-1;
+						len_stroke = len_stroke - 1;
+					};
+				};
+			};
+		};
+		return new_strokes;
+	};
+
+
 };
 
 
@@ -115,6 +114,28 @@ async function post_then_get(category){
     await send_to_eval();
     result_list = await get_results();
     populate_table(result_list, category);
+
+	async function send_to_eval(){
+		var base64 = canvas.toDataURL("image/png");
+		base64 = base64.replace(/^data:image\/(png|jpg);base64,/, "");
+	
+		return fetch('/eval_img', {
+			method: 'POST',
+			body: base64
+		})
+		.then(response => {
+			console.log(response)
+		})
+		.catch(error => {
+			console.error(error)
+		});
+	};
+	
+	
+	async function get_results(){
+		const response = await fetch('/eval_img');
+		return await response.json();
+	};
 };
 
 
@@ -183,18 +204,36 @@ function pencil(){
         
     canvas.onmouseup = function(e){
 		strokelist.push(stroke.map((x) => x));
-		resize_strokelist();
+		mapped_strokelist.length = 0;
+
+		set_canvas_boundaries();
+		if (boundaries['x_max'] > boundaries['y_max']){
+			mapped_strokelist = resize(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255)/(boundaries['x_max'] - boundaries['x_min'])) );
+		} else {
+			mapped_strokelist = resize(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255)/(boundaries['y_max'] - boundaries['y_min'])) );
+		};
+		
 		stroke.length = 0;
         post_then_get(category);
+		hidden_pencil();
         hold = false;
     };
         
     canvas.onmouseout = function(e){
         if(hold){
 			strokelist.push(stroke.map((x) => x));
-			resize_strokelist();
+			mapped_strokelist.length = 0;
+			
+			set_canvas_boundaries();
+			if (boundaries['x_max'] > boundaries['y_max']){
+				mapped_strokelist = resize(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255)/(boundaries['x_max'] - boundaries['x_min'])) );
+			} else {
+				mapped_strokelist = resize(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255)/(boundaries['y_max'] - boundaries['y_min'])) );
+			};
+			
 			stroke.length = 0;
             post_then_get(category);
+			hidden_pencil();
         }
         hold = false;
     };
@@ -203,7 +242,22 @@ function pencil(){
         ctx.lineTo(curX, curY);
         ctx.stroke();
         stroke.push({"x": Math.floor(curX), "y": Math.floor(curY), "t": Date.now() - start_time});
-    }
+    };
+};
+
+
+function hidden_pencil(){
+	ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+	len_mapped_strokelist = mapped_strokelist.length;
+	for (i=0; i<len_mapped_strokelist; i++){
+		len_stroke = mapped_strokelist[i].length;
+		ctx2.beginPath();
+		ctx2.moveTo(mapped_strokelist[i][0]['x'], mapped_strokelist[i][0]['y']);
+		for (j=1; j<len_stroke; j++){
+			ctx2.lineTo(mapped_strokelist[i][j]['x'], mapped_strokelist[i][j]['y']);
+			ctx2.stroke();
+		};
+	};
 };
 
 
@@ -236,7 +290,7 @@ function clearpage(){
         for(j=0; j<=1; j++){            
             var cell = document.getElementById('cell' + i.toString() + j.toString());
             cell.innerHTML = '';
-        }
+        };
     };
 };
 
