@@ -14,22 +14,79 @@ ctx.fillStyle = "black";
 ctx.fill();
 var stroke = [];
 var strokelist = [];
+var mapped_strokelist = [];
+var boundaries = [0,0,0,0]; // == [x_min, x_max, y_min, y_max]
 
 
-// function dataURLtoBlob(dataURL) {
-//     let array, binary, i, len;
-//     binary = atob(dataURL.split(',')[1]);
-//     array = [];
-//     i = 0;
-//     len = binary.length;
-//     while (i < len) {
-//       array.push(binary.charCodeAt(i));
-//       i++;
-//     }
-//     return new Blob([new Uint8Array(array)], {
-//       type: 'image/png'
-//     });
-// };
+function set_xy_boundaries(){
+	var len_stroke = stroke.length;
+	
+	if (strokelist.length == 1){
+		boundaries[0] = stroke[0]['x'];
+		boundaries[1] = stroke[0]['x'];
+		boundaries[2] = stroke[0]['y'];
+		boundaries[3] = stroke[0]['y'];
+	}
+
+	for (j=0; j<len_stroke; j++){
+		if(stroke[j]['x'] < boundaries[0]){
+			boundaries[0] = stroke[j]['x'];
+		} else if(stroke[j]['x'] > boundaries[1]){
+			boundaries[1] = stroke[j]['x'];
+		}
+		if(stroke[j]['y'] < boundaries[2]){
+			boundaries[2] = stroke[j]['y'];
+		} else if(stroke[j]['y'] > boundaries[3]){
+			boundaries[3] = stroke[j]['y'];
+		}
+	}
+}
+
+
+function translate_and_scale(){
+	var len_strokelist = strokelist.length;
+	mapped_strokelist.length = 0;
+	mapped_strokelist = structuredClone(strokelist);
+
+	// scale all strokes
+	for (i=0; i<len_strokelist; i++){
+		var len_stroke = strokelist[i].length;
+		for (j=0; j<len_stroke; j++){
+			if (boundaries[1] > boundaries[3]){
+				mapped_strokelist[i][j]['x'] = Math.round((strokelist[i][j]['x'] - boundaries[0]) / (boundaries[1] - boundaries[0]) * 255);
+				mapped_strokelist[i][j]['y'] = Math.round((strokelist[i][j]['y'] - boundaries[2]) / (boundaries[1] - boundaries[0]) * 255);
+			} else { // if y_max >= x_max
+				mapped_strokelist[i][j]['x'] = Math.round((strokelist[i][j]['y'] - boundaries[0]) / (boundaries[3] - boundaries[2]) * 255);
+				mapped_strokelist[i][j]['y'] = Math.round((strokelist[i][j]['y'] - boundaries[2]) / (boundaries[3] - boundaries[2]) * 255);
+			}
+		}
+	}
+}
+
+function remove_duplicates(){
+	var len_strokelist = mapped_strokelist.length;
+	
+	for (i=0; i<len_strokelist; i++){
+		len_stroke = mapped_strokelist[i].length;
+		for (j=0; j<len_stroke-1; j++){
+			if (mapped_strokelist[i][j]['x'] == mapped_strokelist[i][j+1]['x']){
+				if (mapped_strokelist[i][j]['y'] == mapped_strokelist[i][j+1]['y']){
+					mapped_strokelist[i].splice(j, 1);
+					j = j - 1;
+					len_stroke = len_stroke - 1;
+				}
+			}
+		}
+	}
+}
+
+
+function resize_strokelist(){
+	set_xy_boundaries();
+	translate_and_scale();
+	remove_duplicates();
+}
+
 
 async function send_to_eval(){
     var base64 = canvas.toDataURL("image/png");
@@ -48,31 +105,6 @@ async function send_to_eval(){
 };
 
 
-async function post_img(target_route){
-    var base64 = canvas.toDataURL("image/png");
-    base64 = base64.replace(/^data:image\/(png|jpg);base64,/, "");
-
-    return fetch(target_route, {
-        method: 'POST',
-        body: JSON.stringify({
-            category: category,
-            recognized: result_list[0][0] == category,
-            countrycode: getCountry(),
-            strokelist: strokelist,
-            base64: base64
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-        }
-    })
-    .then((json) => console.log(json))
-    .catch(error => {
-        console.error(error)
-    });
-
-};
-
-
 async function get_results(){
     const response = await fetch('/eval_img');
     return await response.json();
@@ -85,6 +117,30 @@ async function post_then_get(category){
     populate_table(result_list, category);
 };
 
+
+async function post_img(target_route){
+    var base64 = canvas.toDataURL("image/png");
+    base64 = base64.replace(/^data:image\/(png|jpg);base64,/, "");
+
+    return fetch(target_route, {
+        method: 'POST',
+        body: JSON.stringify({
+            category: category,
+            recognized: result_list[0][0] == category,
+            countrycode: getCountry(),
+            strokelist: mapped_strokelist,
+            base64: base64
+        }),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })
+    .then((json) => console.log(json))
+    .catch(error => {
+        console.error(error)
+    });
+
+};
 
 function populate_table(results, category){
     for(i=0; i<=9; i++){
@@ -127,6 +183,7 @@ function pencil(){
         
     canvas.onmouseup = function(e){
 		strokelist.push(stroke.map((x) => x));
+		resize_strokelist();
 		stroke.length = 0;
         post_then_get(category);
         hold = false;
@@ -135,6 +192,7 @@ function pencil(){
     canvas.onmouseout = function(e){
         if(hold){
 			strokelist.push(stroke.map((x) => x));
+			resize_strokelist();
 			stroke.length = 0;
             post_then_get(category);
         }
@@ -167,6 +225,7 @@ function next(){
 function clearpage(){
 	// clear lists
 	strokelist.length = 0;
+	mapped_strokelist.length = 0;
 
     // clear canvas
     ctx.fillRect(0, 0, canvas.width, canvas.height);
