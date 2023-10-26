@@ -6,22 +6,6 @@
     <div class="container-lg">
         <div class="row">
             <div class="col-4">
-                <h2 class="mt-3">Tips:</h2>
-                <p>&#x2022; Keep your drawing simple!</p>
-                <p>&#x2022; Press 'save' to save your current drawing on the server.</p>
-                <p>&#x2022; Press 'clear' to redraw.</p>
-            </div>
-
-            <div class="col-4 container d-flex p-4 flex-column justify-content-between">
-                <div class="text-center">
-                    <h2 id="category">Draw !</h2>
-                </div>
-                
-                <div class="text-center">
-                    <canvas id="canvas" width="256" height="256" class="border rounded">Update your browser to support HTML5 Canvas</canvas>
-                    <canvas id="canvas2" width="256" height="256" class="border rounded">Update your browser to support HTML5 Canvas</canvas>
-                </div>
-
                 <div class="container d-flex justify-content-around">
                     <div class="col-2 form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="chk_save" name="save" value="no" unchecked>
@@ -35,6 +19,17 @@
                     <div>
                         <button class="btn bg-danger" onclick="clearpage()">clear</button>
                     </div>
+                </div>
+            </div>
+
+            <div class="col-4 container d-flex p-4 flex-column justify-content-between">
+                <div class="text-center">
+                    <h2 id="category">Draw !</h2>
+                </div>
+                
+                <div class="text-center">
+                    <canvas id="canvas" width="256" height="256" class="border rounded">Update your browser to support HTML5 Canvas</canvas>
+                    <canvas id="hidden_canvas" width="256" height="256" class="border rounded">Update your browser to support HTML5 Canvas</canvas>
                 </div>
 
                 <!-- <div class="btn-group">
