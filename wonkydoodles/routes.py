@@ -71,15 +71,13 @@ def img_handler():
 
     if request.method == 'POST':
         img = request.json
-        print(1)
 
         try:
             if not (Validate.category(img['category'], './wonkydoodles/static/label_list.txt') and
                 Validate.recognized(img['recognized']) and
-                Validate.countrycode(img['countrycode'])):# and
-                #Validate.b64(img['base64'])):
+                Validate.countrycode(img['countrycode']) and
+                Validate.b64(img['base64'])):
                     raise Exception("Validation error: Type 1")
-            print('2')
             
             img['timestamp'] = datetime.timestamp(datetime.utcnow())
 
@@ -102,7 +100,6 @@ def img_handler():
 
                 # Add Vector Block
                 for vector_iter in stroke_iter:
-                    print(vector_iter)
                     if not Validate.vector(vector_iter, range(0, 256)): raise Exception("Validation error: Type 2")
 
                     vector = Vector(x = vector_iter['x'],
@@ -111,8 +108,6 @@ def img_handler():
                                     stroke_id = stroke.id
                                     )
                     stroke.stroke.append(vector)
-
-            print(6)
 
         except:
             db.session.rollback()

@@ -95,13 +95,10 @@ function pencil(){
 				len_strokelist = strokelist.length;
 				strokelist[len_strokelist-1][0]['x'] = 0;
 				strokelist[len_strokelist-1][0]['y'] = 0;
-				console.log('eq')
 		} else if ((boundaries['x_max'] - boundaries['x_min']) > (boundaries['y_max'] - boundaries['y_min'])){
 			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255.)/(boundaries['x_max'] - boundaries['x_min'])) );
-			console.log('x_max');
 		} else {
 			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255.)/(boundaries['y_max'] - boundaries['y_min'])) );
-			console.log('y_max');
 		};
 	};
 
@@ -144,7 +141,6 @@ function pencil(){
 				boundaries['y_max'] = stroke[j]['y'];
 			};
 		};
-		console.log(boundaries);
 	};
 	
 	
