@@ -4,17 +4,9 @@ var result_list = [];
 
 var canvas = document.getElementById("canvas");
 var ctx = this.canvas.getContext("2d");
-ctx.lineWidth = 1;
-ctx.strokeStyle = "white";
-ctx.fillStyle = "dark";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 var hidden_canvas = document.getElementById("hidden_canvas");
 var hidden_ctx = this.hidden_canvas.getContext("2d");
-hidden_ctx.lineWidth = 1;
-hidden_ctx.strokeStyle = "white";
-hidden_ctx.fillStyle = "dark";
-hidden_ctx.fillRect(0, 0, hidden_canvas.width, hidden_canvas.height);
 
 var curX, curY, prevX, prevY;
 var hold = false;
@@ -24,6 +16,18 @@ var stroke = [];
 var strokelist = [];
 var mapped_strokelist = [];
 var boundaries = {'x_min': 0, 'x_max': 0, 'y_min': 0, 'y_max': 0};
+
+
+function set_canvas_params(){
+	canvas.height = window.innerHeight;
+	canvas.width = window.innerWidth;
+	ctx.lineWidth = 4;
+	ctx.strokeStyle = "white";
+
+	hidden_canvas.style.top = '5rem';
+	hidden_ctx.lineWidth = 1;
+	hidden_ctx.strokeStyle = "white";
+};
 
 
 function pencil(){
@@ -55,9 +59,9 @@ function pencil(){
 		draw();
 		strokelist.push(stroke.map((x) => x));
 		draw_hidden();
+		hidden_pencil();
 		stroke.length = 0;
         post_then_get(category);
-		hidden_pencil();
         hold = false;
     };
 
@@ -67,9 +71,9 @@ function pencil(){
 			draw();
 			strokelist.push(stroke.map((x) => x));
 			draw_hidden();
+			hidden_pencil();
 			stroke.length = 0;
             post_then_get(category);
-			hidden_pencil();
 			hold = false;
         }
     };
@@ -78,7 +82,7 @@ function pencil(){
     function draw(){
         ctx.lineTo(curX, curY);
         ctx.stroke();
-        stroke.push({"x": Math.floor(curX), "y": Math.floor(curY), "t": Date.now() - start_time});
+        stroke.push({"x": Math.round(curX), "y": Math.round(curY), "t": Date.now() - start_time});
     };
 
 
@@ -91,10 +95,13 @@ function pencil(){
 				len_strokelist = strokelist.length;
 				strokelist[len_strokelist-1][0]['x'] = 0;
 				strokelist[len_strokelist-1][0]['y'] = 0;
-		} else if (boundaries['x_max'] > boundaries['y_max']){
-			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255)/(boundaries['x_max'] - boundaries['x_min'])) );
+				console.log('eq')
+		} else if ((boundaries['x_max'] - boundaries['x_min']) > (boundaries['y_max'] - boundaries['y_min'])){
+			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255.)/(boundaries['x_max'] - boundaries['x_min'])) );
+			console.log('x_max');
 		} else {
-			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255)/(boundaries['y_max'] - boundaries['y_min'])) );
+			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255.)/(boundaries['y_max'] - boundaries['y_min'])) );
+			console.log('y_max');
 		};
 	};
 
@@ -102,6 +109,7 @@ function pencil(){
 	function hidden_pencil(){
 		hidden_ctx.fillRect(0, 0, hidden_canvas.width, hidden_canvas.height);
 		len_mapped_strokelist = mapped_strokelist.length;
+
 		for (i=0; i<len_mapped_strokelist; i++){
 			len_stroke = mapped_strokelist[i].length;
 			hidden_ctx.beginPath();
@@ -136,6 +144,7 @@ function pencil(){
 				boundaries['y_max'] = stroke[j]['y'];
 			};
 		};
+		console.log(boundaries);
 	};
 	
 	
@@ -144,6 +153,7 @@ function pencil(){
 		var new_strokes = translate(strokes, x, y);
 		new_strokes = scale(new_strokes, x_org, y_org, scaling);
 		new_strokes = remove_duplicates(new_strokes);
+		new_strokes = round_to_int(new_strokes);
 	
 		return new_strokes;
 	
@@ -197,6 +207,23 @@ function pencil(){
 			};
 			return new_strokes;
 		};
+
+
+		function round_to_int(strokes){
+			var new_strokes = structuredClone(strokes);
+			var len_strokes = new_strokes.length;
+	
+			for (i=0; i<len_strokes; i++){
+				var len_stroke = new_strokes[i].length;
+
+				for (j=0; j<len_stroke ;j++){
+					new_strokes[i][j]['x'] = Math.round(new_strokes[i][j]['x']);
+					new_strokes[i][j]['y'] = Math.round(new_strokes[i][j]['y']);
+				};
+			};
+			return new_strokes;
+		};
+
 	};
 	
 	
@@ -263,7 +290,7 @@ function next(){
 
 
 	async function post_img(target_route){
-		var base64 = canvas.toDataURL("image/png");
+		var base64 = hidden_canvas.toDataURL("image/png");
 		base64 = base64.replace(/^data:image\/(png|jpg);base64,/, "");
 	
 		return fetch(target_route, {
@@ -285,7 +312,7 @@ function next(){
 		});
 	
 	};
-	
+
 };
 
 function clearpage(){
@@ -294,7 +321,7 @@ function clearpage(){
 	mapped_strokelist.length = 0;
 
     // clear canvas
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
     empty = true;
 
     // clear table
