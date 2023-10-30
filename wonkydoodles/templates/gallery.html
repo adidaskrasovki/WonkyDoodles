@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <body onload="fill_page()">
+    <body onload="set_canvas_params(), fill_page()">
     <div class="container-lg">
         <div class="my-3 text-center">
             <h2>Gallery</h2>
@@ -61,11 +61,15 @@
 
         </div>
 
-            <div class="text-center mt-5">
-                <btn id="btn_left" onclick="click_left_btn()" class="btn bg-danger" style="visibility: hidden">&lt</btn>
-                <p id="pagenumber" class="mx-3" style="display:inline">1</p>
-                <btn id="btn_right" onclick="click_right_btn()" class="btn bg-danger">&gt</btn>
-            </div>
+        <div class="text-center mt-5">
+            <btn id="btn_left" onclick="click_left_btn()" class="btn bg-danger" style="visibility: hidden">&lt</btn>
+            <p id="pagenumber" class="mx-3" style="display:inline">1</p>
+            <btn id="btn_right" onclick="click_right_btn()" class="btn bg-danger">&gt</btn>
+        </div>
+
+        <div>
+            <canvas id="hidden_canvas" width="256" height="256" style="visibility:show">Update your browser to support HTML5 Canvas</canvas>
+        </div>
 
     </div>
 

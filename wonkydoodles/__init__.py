@@ -31,6 +31,7 @@ model = tc.load(f"{filepath}{filename}", map_location=device)
 
 # get length of database
 from wonkydoodles.models import Doodle
+
 len_db = 0
 with app.app_context():
     len_db = db.session.query(Doodle).count()

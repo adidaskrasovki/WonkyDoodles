@@ -17,7 +17,6 @@ var strokelist = [];
 var mapped_strokelist = [];
 var boundaries = {'x_min': 0, 'x_max': 0, 'y_min': 0, 'y_max': 0};
 
-
 function set_canvas_params(){
 	canvas.height = window.innerHeight;
 	canvas.width = window.innerWidth;
@@ -90,15 +89,15 @@ function pencil(){
 		mapped_strokelist.length = 0;
 		set_canvas_boundaries();
 
-		if (boundaries['x_min'] == boundaries['x_max'] ||
+		if (boundaries['x_min'] == boundaries['x_max'] &&
 			boundaries['y_min'] == boundaries['y_max']){
 				len_strokelist = strokelist.length;
 				strokelist[len_strokelist-1][0]['x'] = 0;
 				strokelist[len_strokelist-1][0]['y'] = 0;
 		} else if ((boundaries['x_max'] - boundaries['x_min']) > (boundaries['y_max'] - boundaries['y_min'])){
-			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255.)/(boundaries['x_max'] - boundaries['x_min'])) );
+			mapped_strokelist = lin_transform(strokelist, -boundaries['x_min'], -boundaries['y_min'], 0, 0, ((255.)/(boundaries['x_max'] - boundaries['x_min'])) );
 		} else {
-			mapped_strokelist = fit_to_256(strokelist, boundaries['x_min'], boundaries['y_min'], 0, 0, ((255.)/(boundaries['y_max'] - boundaries['y_min'])) );
+			mapped_strokelist = lin_transform(strokelist, -boundaries['x_min'], -boundaries['y_min'], 0, 0, ((255.)/(boundaries['y_max'] - boundaries['y_min'])) );
 		};
 	};
 
@@ -144,7 +143,7 @@ function pencil(){
 	};
 	
 	
-	function fit_to_256(strokes, x, y, x_org, y_org, scaling){
+	function lin_transform(strokes, x, y, x_org, y_org, scaling){
 	
 		var new_strokes = translate(strokes, x, y);
 		new_strokes = scale(new_strokes, x_org, y_org, scaling);
@@ -160,8 +159,8 @@ function pencil(){
 			for (i=0; i<len_strokes; i++){
 				var len_stroke = strokes[i].length;
 				for (j=0; j<len_stroke; j++){
-					new_strokes[i][j]['x'] = strokes[i][j]['x'] - x;
-					new_strokes[i][j]['y'] = strokes[i][j]['y'] - y;
+					new_strokes[i][j]['x'] = strokes[i][j]['x'] + x;
+					new_strokes[i][j]['y'] = strokes[i][j]['y'] + y;
 				};
 			};
 			return new_strokes;
@@ -175,8 +174,8 @@ function pencil(){
 			for (i=0; i<len_strokes; i++){
 				var len_stroke = strokes[i].length;
 				for (j=0; j<len_stroke; j++){
-					new_strokes[i][j]['x'] = (strokes[i][j]['x'] - x_org) * scaling;
-					new_strokes[i][j]['y'] = (strokes[i][j]['y'] - y_org) * scaling;
+					new_strokes[i][j]['x'] = (strokes[i][j]['x'] - x_org) * scaling + x_org;
+					new_strokes[i][j]['y'] = (strokes[i][j]['y'] - y_org) * scaling + y_org;
 				};
 			};
 			return new_strokes;
@@ -296,7 +295,7 @@ function next(){
 				recognized: result_list[0][0] == category,
 				countrycode: getCountry(),
 				strokelist: mapped_strokelist,
-				base64: base64
+				boundaries: get_post_boundaries(mapped_strokelist)
 			}),
 			headers: {
 				"Content-type": "application/json; charset=UTF-8"
@@ -309,7 +308,26 @@ function next(){
 	
 	};
 
+	function get_post_boundaries(strokes){
+		var len_strokes = strokes.length;
+		var x_max = 0;
+		var y_max = 0;
+		for (i=0; i<len_strokes; i++){
+			var len_stroke = strokes[i].length;
+			for (j=0; j<len_stroke; j++){
+				if (strokes[i][j]['x'] > x_max){
+					x_max = strokes[i][j]['x'];
+				};
+				if (strokes[i][j]['y'] > y_max){
+					y_max = strokes[i][j]['y'];
+				};	
+			};
+		};
+		return {'x_max': x_max, 'y_max': y_max};
+	};
+
 };
+
 
 function clearpage(){
 	// clear lists
@@ -328,6 +346,7 @@ function clearpage(){
         };
     };
 };
+
 
 // WARNING!!! IF POSSIBLE, KEEP THIS FUNCTION MINIMIZED/CLOSED AT ALL TIMES IN YOUR IDE!!!!
 // WIP

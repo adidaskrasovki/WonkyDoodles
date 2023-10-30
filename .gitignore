@@ -1,6 +1,5 @@
 __pycache__/
 runs/
-database/.
 .vscode/
 test.py
 test.txt

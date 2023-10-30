@@ -1,8 +1,3 @@
-from io import BytesIO
-import base64
-from PIL import Image
-
-
 class Validate():
 
     def category(category, categories_txt):
@@ -21,14 +16,11 @@ class Validate():
             return True
         return False
 
-    def b64(image):
-        if isinstance(image, (str)):
-            image = base64.b64decode(image)
-            image = Image.open(BytesIO(image)).convert('1')
-            try:
-                image.verify()
-                return True
-            except: return False
+    def boundaries(boundaries, interval):
+        if len(boundaries) != 2: return False
+        if (isinstance(boundaries['x_max'], (int)) and boundaries['x_max'] in interval and
+            isinstance(boundaries['y_max'], (int)) and boundaries['y_max'] in interval):
+            return True
         return False
         
     def vector(vector, interval):

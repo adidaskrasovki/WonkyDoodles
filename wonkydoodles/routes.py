@@ -76,7 +76,7 @@ def img_handler():
             if not (Validate.category(img['category'], './wonkydoodles/static/label_list.txt') and
                 Validate.recognized(img['recognized']) and
                 Validate.countrycode(img['countrycode']) and
-                Validate.b64(img['base64'])):
+                Validate.boundaries(img['boundaries'], range(0, 256))):
                     raise Exception("Validation error: Type 1")
             
             img['timestamp'] = datetime.timestamp(datetime.utcnow())
@@ -87,15 +87,15 @@ def img_handler():
                             recognized = img['recognized'],
                             timestamp = img['timestamp'],
                             countrycode = img['countrycode'],
-                            base64 = img['base64']
+                            x_max = img['boundaries']['x_max'],
+                            y_max = img['boundaries']['y_max']
                             )
             db.session.add(doodle)
         
             # Add Stroke Block
             for stroke_iter in img['strokelist']:
 
-                stroke = Stroke(doodle_id = doodle.id                     
-                                )
+                stroke = Stroke(doodle_id = doodle.id)
                 doodle.strokelist.append(stroke)
 
                 # Add Vector Block
@@ -122,12 +122,23 @@ def img_handler():
         try:
             args = request.args
             idx = int(args['idx'])
+            db_doodle = db.session.get(Doodle, len_db - idx)
 
-            doodle = {'category': db.session.get(Doodle, len_db - idx).category,
-                      'recognized': db.session.get(Doodle, len_db - idx).recognized,
-                      'base64': db.session.get(Doodle, len_db - idx).base64                   
+            # Make Strokelist, containing all (strokes containing its respective vectors)
+            strokes = db_doodle.strokelist
+            strokelist = []
+            for stroke in strokes:
+                vectorlist = []
+                for vector in stroke.stroke:
+                    vectorlist.append({'x': vector.x, 'y': vector.y})
+                strokelist.append(vectorlist)
+
+            doodle = {'category': db_doodle.category,
+                      'recognized': db_doodle.recognized,
+                      'x_max': db_doodle.x_max,
+                      'y_max': db_doodle.y_max,
+                      'strokelist': strokelist                 
                       }
-            doodle = json.dumps(doodle, indent = 1) 
 
             return doodle
                 
