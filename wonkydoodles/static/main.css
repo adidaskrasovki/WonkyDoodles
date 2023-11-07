@@ -4,3 +4,14 @@ body {
     color: #f8f9fa;
     font-family: 'Brush Script MT', cursive;
   }
+
+  /* toggle container */
+.card-checkbox.custom-control-input:not(:checked) ~ .custom-control-label::before {
+  background-color: primary; /* Change the background color of the toggle container  when it is not checked */
+  border-color: primary; /* Change the border color of the toggle container when it is not checked */
+}
+
+.card-checkbox.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: primary; /* Change the color of the toggle container when it is checked */
+    border-color: light; /* Change the border color of the toggle container when it is checked */
+}

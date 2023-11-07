@@ -11,6 +11,7 @@
             bottom: 0;
             left: 0;
             right: 0;
+            z-index: 68;
         }
     </style>
 
@@ -20,19 +21,21 @@
         <div class="row">
             <div class="col-3">
                 <div class="container d-flex justify-content-around">
-                    <div class="form-check form-switch text-center" style="position:relative;z-index: 69;">
-                        <div>
-                            <input class="form-check-input mx-0 p-2" type="checkbox" id="chk_save" name="save" value="no" unchecked>
-                            <br>
-                            <label class="form-check-label" for="chk_save">save</label>
-                        </div>
-                    </div>
-
                     <div>
                         <button class="btn bg-primary p-2" style="position:relative;z-index: 69;" onclick="next()">Next !</button>
                         <button class="btn bg-primary p-2" style="position:relative;z-index: 69;" onclick="clearpage()">Clear</button>
                     </div>
+
+                    <div class="form-check form-switch text-center" style="position:relative;z-index: 69;">
+                        <div class="custom-control custom-switch p-0">
+                            <input type="checkbox" class="custom-control-input card-checkbox" id="chk_save" name="save" value="no" unchecked>
+                            <label class="custom-control-label" for="chk_save">
+                                save
+                            </label>
+                        </div>
+                    </div>
                 </div>
+
             </div>
 
             <div class="col-5">
@@ -50,43 +53,43 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr height="45 %" id="line0">
+                        <tr height="50 %" id="line0">
                             <td id="cell00"></td>
                             <td id="cell01"></td>
                         </tr>
-                        <tr height="45 %" id="line1">
+                        <tr height="50 %" id="line1">
                             <td id="cell10"></td>
                             <td id="cell11"> </td>
                         </tr>
-                        <tr height="45 %" id="line2">
+                        <tr height="50 %" id="line2">
                             <td id="cell20"></td>
                             <td id="cell21"></td>
                         </tr>
-                        <tr height="45 %" id="line3">
+                        <tr height="50 %" id="line3">
                             <td id="cell30"></td>
                             <td id="cell31"></td>
                         </tr>
-                        <tr height="45 %" id="line4">
+                        <tr height="50 %" id="line4">
                             <td id="cell40"></td>
                             <td id="cell41"></td>
                         </tr>
-                        <tr height="45 %" id="line5">
+                        <tr height="50 %" id="line5">
                             <td id="cell50"></td>
                             <td id="cell51"></td>
                         </tr>
-                        <tr height="45 %" id="line6">
+                        <tr height="50 %" id="line6">
                             <td id="cell60"></td>
                             <td id="cell61"></td>
                         </tr>
-                        <tr height="45 %" id="line7">
+                        <tr height="50 %" id="line7">
                             <td id="cell70"></td>
                             <td id="cell71"></td>
                         </tr>
-                        <tr height="45 %" id="line8">
+                        <tr height="50 %" id="line8">
                             <td id="cell80"></td>
                             <td id="cell81"></td>
                         </tr>
-                        <tr height="45 %" id="line9">
+                        <tr height="50 %" id="line9">
                             <td id="cell90"></td>
                             <td id="cell91"></td>
                         </tr>
@@ -94,7 +97,7 @@
                 </table>
 
                 <div>
-                    <canvas id="hidden_canvas" width="256" height="256" style="visibility:show">Update your browser to support HTML5 Canvas</canvas>
+                    <canvas id="hidden_canvas" width="256" height="256" style="visibility:hidden">Update your browser to support HTML5 Canvas</canvas>
                 </div>
 
             </div>
