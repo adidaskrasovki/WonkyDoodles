@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, flash, redirect, request, send_from_directory
-from wonkydoodles import LocalStore, app, db, model, device, len_db
+from wonkydoodles import azureSQL, LocalStore, app, db, model, device, len_db
 from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
 from wonkydoodles.validate import Validate
@@ -30,7 +30,6 @@ def gallery():
     return render_template('gallery.html', title='Gallery')
 
 
-#@app.route('/', methods=['GET'])
 @app.route('/draw')
 def draw():
     return render_template('draw.html', title="Draw")
@@ -68,79 +67,62 @@ def eval_img():
 @app.route('/img_handler', methods=['GET', 'POST'])
 def img_handler():
     global len_db
+    db = azureSQL.AzureDB()
 
     if request.method == 'POST':
         img = request.json
 
         try:
+            # Validation
             if not (Validate.category(img['category'], './wonkydoodles/static/label_list.txt') and
                 Validate.recognized(img['recognized']) and
                 Validate.countrycode(img['countrycode']) and
                 Validate.boundaries(img['boundaries'], range(0, 256))):
                     raise Exception("Validation error: Type 1")
             
-            img['timestamp'] = datetime.timestamp(datetime.utcnow())
+            img['timestamp'] = str(datetime.timestamp(datetime.utcnow()))
 
+            
             # Add POSTed .json to Database
-            # Add Doodle Block
-            doodle = Doodle(category = img['category'],
-                            recognized = img['recognized'],
-                            timestamp = img['timestamp'],
-                            countrycode = img['countrycode'],
-                            x_max = img['boundaries']['x_max'],
-                            y_max = img['boundaries']['y_max']
-                            )
-            db.session.add(doodle)
+            # Add Doodle
+            db.insert("INSERT INTO dbo.Doodles (dbo.Doodles.category, dbo.Doodles.recognized, dbo.Doodles.timestamp, dbo.Doodles.countrycode, dbo.Doodles.x_max, dbo.Doodles.y_max) VALUES (?, ?, ?, ?, ?, ?)", [img['category'], img['recognized'], img['timestamp'], img['countrycode'], img['boundaries']['x_max'], img['boundaries']['y_max']])
         
-            # Add Stroke Block
+            # Add Stroke
+            DoodleID = db.query('SELECT MAX(DoodleID) FROM Doodles', [])[0]['']
             for stroke_iter in img['strokelist']:
+                db.insert("INSERT INTO Strokes (Strokes.DoodleID) VALUES (?)", [DoodleID])
 
-                stroke = Stroke(doodle_id = doodle.id)
-                doodle.strokelist.append(stroke)
-
-                # Add Vector Block
+                # Add Vector
+                StrokeID = db.query("SELECT MAX(StrokeID) FROM Strokes", [])[0]['']
                 for vector_iter in stroke_iter:
                     if not Validate.vector(vector_iter, range(0, 256)): raise Exception("Validation error: Type 2")
 
-                    vector = Vector(x = vector_iter['x'],
-                                    y = vector_iter['y'],
-                                    t = vector_iter['t'],
-                                    stroke_id = stroke.id
-                                    )
-                    stroke.stroke.append(vector)
+                    db.insert("INSERT INTO Vectors (Vectors.x, Vectors.y, Vectors.t, Vectors.StrokeID) VALUES (?, ?, ?, ?)", [vector_iter['x'], vector_iter['y'], vector_iter['t'], StrokeID])
 
         except:
-            db.session.rollback()
             return "failure"
-        
+
         else:
-            db.session.commit()
             len_db += 1
             return "success"
-    
-    else: # if method == 'GET':
+
+    else: # if method == 'GET'
         try:
             args = request.args
             idx = int(args['idx'])
-            db_doodle = db.session.get(Doodle, len_db - idx)
 
-            # Make Strokelist, containing all (strokes containing its respective vectors)
-            strokes = db_doodle.strokelist
+            db = azureSQL.AzureDB()
+            doodle = db.query("SELECT Doodles.category, Doodles.recognized, Doodles.x_max, Doodles.y_max FROM Doodles WHERE DoodleID = ?", [len_db - idx])[0]
+
+            strokes = db.query("SELECT Strokes.StrokeID FROM Strokes WHERE Strokes.DoodleID = ?", [len_db - idx])
             strokelist = []
             for stroke in strokes:
-                vectorlist = []
-                for vector in stroke.stroke:
-                    vectorlist.append({'x': vector.x, 'y': vector.y})
+                vectorlist = db.query("SELECT Vectors.x, Vectors.y FROM Vectors WHERE Vectors.StrokeID = ?", [stroke['strokeid']])
                 strokelist.append(vectorlist)
 
-            doodle = {'category': db_doodle.category,
-                      'recognized': db_doodle.recognized,
-                      'x_max': db_doodle.x_max,
-                      'y_max': db_doodle.y_max,
-                      'strokelist': strokelist                 
-                      }
-
+            doodle['strokelist'] = strokelist
             return doodle
-                
-        except:
+        
+        except Exception as error: 
+            print(error)
             return '404'

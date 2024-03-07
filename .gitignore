@@ -6,3 +6,7 @@ test.txt
 get.txt
 post.txt
 forms.py
+azurecreds.py
+create_database.py
+wonkydoodles.db
+WonkyDoodlesDB

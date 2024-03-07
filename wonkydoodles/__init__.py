@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from wonkydoodles import azureSQL
 
 from os import listdir, path
 import torch as tc
@@ -35,5 +36,8 @@ from wonkydoodles.models import Doodle
 len_db = 0
 with app.app_context():
     len_db = db.session.query(Doodle).count()
+    db = azureSQL.AzureDB()
+    len_db = db.query("SELECT MAX(DoodleID) FROM Doodles", [])[0]['']
+    if len_db == None: len_db = 0
 
 from wonkydoodles import routes
