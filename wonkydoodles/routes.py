@@ -67,60 +67,60 @@ def eval_img():
 @app.route('/img_handler', methods=['GET', 'POST'])
 def img_handler():
     global len_db
-    db = azureSQL.AzureDB()
 
     if request.method == 'POST':
-        img = request.json
+        with azureSQL.AzureDB() as db:
+            img = request.json
 
-        try:
-            # Validation
-            if not (Validate.category(img['category'], './wonkydoodles/static/label_list.txt') and
-                Validate.recognized(img['recognized']) and
-                Validate.countrycode(img['countrycode']) and
-                Validate.boundaries(img['boundaries'], range(0, 256))):
-                    raise Exception("Validation error: Type 1")
+            try:
+                # Validation
+                if not (Validate.category(img['category'], './wonkydoodles/static/label_list.txt') and
+                    Validate.recognized(img['recognized']) and
+                    Validate.countrycode(img['countrycode']) and
+                    Validate.boundaries(img['boundaries'], range(0, 256))):
+                        raise Exception("Validation error: Type 1")
+                
+                img['timestamp'] = str(datetime.timestamp(datetime.utcnow()))
+
+                
+                # Add POSTed .json to Database
+                # Add Doodle
+                db.insert("INSERT INTO dbo.Doodles (dbo.Doodles.category, dbo.Doodles.recognized, dbo.Doodles.timestamp, dbo.Doodles.countrycode, dbo.Doodles.x_max, dbo.Doodles.y_max) VALUES (?, ?, ?, ?, ?, ?)", [img['category'], img['recognized'], img['timestamp'], img['countrycode'], img['boundaries']['x_max'], img['boundaries']['y_max']])
             
-            img['timestamp'] = str(datetime.timestamp(datetime.utcnow()))
+                # Add Stroke
+                DoodleID = db.query('SELECT MAX(DoodleID) FROM Doodles', [])[0]['']
+                for stroke_iter in img['strokelist']:
+                    db.insert("INSERT INTO Strokes (Strokes.DoodleID) VALUES (?)", [DoodleID])
 
-            
-            # Add POSTed .json to Database
-            # Add Doodle
-            db.insert("INSERT INTO dbo.Doodles (dbo.Doodles.category, dbo.Doodles.recognized, dbo.Doodles.timestamp, dbo.Doodles.countrycode, dbo.Doodles.x_max, dbo.Doodles.y_max) VALUES (?, ?, ?, ?, ?, ?)", [img['category'], img['recognized'], img['timestamp'], img['countrycode'], img['boundaries']['x_max'], img['boundaries']['y_max']])
-        
-            # Add Stroke
-            DoodleID = db.query('SELECT MAX(DoodleID) FROM Doodles', [])[0]['']
-            for stroke_iter in img['strokelist']:
-                db.insert("INSERT INTO Strokes (Strokes.DoodleID) VALUES (?)", [DoodleID])
+                    # Add Vector
+                    StrokeID = db.query("SELECT MAX(StrokeID) FROM Strokes", [])[0]['']
+                    for vector_iter in stroke_iter:
+                        if not Validate.vector(vector_iter, range(0, 256)): raise Exception("Validation error: Type 2")
 
-                # Add Vector
-                StrokeID = db.query("SELECT MAX(StrokeID) FROM Strokes", [])[0]['']
-                for vector_iter in stroke_iter:
-                    if not Validate.vector(vector_iter, range(0, 256)): raise Exception("Validation error: Type 2")
+                        db.insert("INSERT INTO Vectors (Vectors.x, Vectors.y, Vectors.t, Vectors.StrokeID) VALUES (?, ?, ?, ?)", [vector_iter['x'], vector_iter['y'], vector_iter['t'], StrokeID])
 
-                    db.insert("INSERT INTO Vectors (Vectors.x, Vectors.y, Vectors.t, Vectors.StrokeID) VALUES (?, ?, ?, ?)", [vector_iter['x'], vector_iter['y'], vector_iter['t'], StrokeID])
+            except:
+                return "failure"
 
-        except:
-            return "failure"
-
-        else:
-            len_db += 1
-            return "success"
+            else:
+                len_db += 1
+                return "success"
 
     else: # if method == 'GET'
         try:
             args = request.args
             idx = int(args['idx'])
 
-            db = azureSQL.AzureDB()
-            doodle = db.query("SELECT Doodles.category, Doodles.recognized, Doodles.x_max, Doodles.y_max FROM Doodles WHERE DoodleID = ?", [len_db - idx])[0]
+            with azureSQL.AzureDB() as db:
+                doodle = db.query("SELECT TOP 1 Doodles.category, Doodles.recognized, Doodles.x_max, Doodles.y_max FROM Doodles WHERE DoodleID = ?", [len_db - idx])[0]
 
-            strokes = db.query("SELECT Strokes.StrokeID FROM Strokes WHERE Strokes.DoodleID = ?", [len_db - idx])
-            strokelist = []
-            for stroke in strokes:
-                vectorlist = db.query("SELECT Vectors.x, Vectors.y FROM Vectors WHERE Vectors.StrokeID = ?", [stroke['strokeid']])
-                strokelist.append(vectorlist)
+                strokes = db.query("SELECT Strokes.StrokeID FROM Strokes WHERE Strokes.DoodleID = ?", [len_db - idx])
+                strokelist = []
+                for stroke in strokes:
+                    vectorlist = db.query("SELECT Vectors.x, Vectors.y FROM Vectors WHERE Vectors.StrokeID = ?", [stroke['strokeid']])
+                    strokelist.append(vectorlist)
 
-            doodle['strokelist'] = strokelist
+                doodle['strokelist'] = strokelist
             return doodle
         
         except Exception as error: 

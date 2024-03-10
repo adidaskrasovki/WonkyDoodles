@@ -42,4 +42,31 @@ class AzureDB:
             print('Failed to execute query')
             print(exception)
             exit (1)
+
+    def trans_start(self, tran_name = 'tran_name'):
+        try:
+            self.cursor.execute('BEGIN TRANS ?', tran_name)
+            self.cursor.commit()
+        except pypyodbc.DatabaseError as exception:
+            print('Failed to execute query')
+            print(exception)
+            exit (1)
+
+    def trans_rollback(self, tran_name = 'tran_name'):
+        try:
+            self.cursor.execute('ROLLBACK TRANS ?', tran_name)
+            self.cursor.commit()
+        except pypyodbc.DatabaseError as exception:
+            print('Failed to execute query')
+            print(exception)
+            exit (1)
+
+    def trans_commit(self, tran_name = 'tran_name'):
+        try:
+            self.cursor.execute('COMMIT TRANS ?', tran_name)
+            self.cursor.commit()
+        except pypyodbc.DatabaseError as exception:
+            print('Failed to execute query')
+            print(exception)
+            exit (1)
             
