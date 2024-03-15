@@ -12,8 +12,7 @@ import base64
 from io import BytesIO
 from datetime import datetime
 from random import randint
-import json
-
+import zipfile
 
 @app.route('/')
 def landing():
@@ -42,7 +41,29 @@ def about():
 
 @app.route('/download/<path:path>')
 def download_database(path):
-    return send_from_directory('database', 'wonkydoodles.db', as_attachment=True)
+    with azureSQL.AzureDB() as db:
+
+        doodles_list = db.query("SELECT * FROM DOODLES", "")
+        with open("./wonkydoodles/database/doodles_list.txt", "w") as f:
+            f.write(' '.join(s for s in list(doodles_list[0].keys())) + '\n' + '\n')
+            for t in doodles_list: f.write(' '.join(str(s) for s in t.values()) + '\n')
+
+        strokes_list = db.query("SELECT * FROM STROKES", "")
+        with open("./wonkydoodles/database/strokes_list.txt", "w") as f:
+            f.write(' '.join(s for s in list(strokes_list[0].keys())) + '\n' + '\n')
+            for t in strokes_list: f.write(' '.join(str(s) for s in t.values()) + '\n')
+
+        vectors_list = db.query("SELECT * FROM VECTORS", "")
+        with open("./wonkydoodles/database/vectors_list.txt", "w") as f:
+            f.write(' '.join(s for s in list(vectors_list[0].keys())) + '\n' + '\n')
+            for t in vectors_list: f.write(' '.join(str(s) for s in t.values()) + '\n')
+
+        with zipfile.ZipFile("./wonkydoodles/database/wonkydoodlesdb.zip", 'w') as zip:
+            zip.write("./wonkydoodles/database/doodles_list.txt", "/doodles_list.txt")
+            zip.write("./wonkydoodles/database/strokes_list.txt", "/strokes_list.txt")
+            zip.write("./wonkydoodles/database/vectors_list.txt", "/vectors_list.txt")
+
+    return send_from_directory('database', 'wonkydoodlesdb.zip', as_attachment=True)
 
 
 @app.route('/stage_category', methods=['GET'])

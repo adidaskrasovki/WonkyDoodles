@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <p>The Dataset is saved as an SQLite-Database with the following tables and respective structures:</p>
+    <p>The Dataset is saved in an Azure SQL Server Database with the following tables and respective structures:</p>
 
     <div class="container">
         <div class="row">
@@ -26,7 +26,7 @@
                         <table class="table table-dark table-striped mb-0">
                             <tbody>
                                 <tr>
-                                    <td>ID</td>
+                                    <td>DoodleID</td>
                                     <td>Int</td>
                                 </tr>
                                 <tr>
@@ -47,11 +47,11 @@
                                 </tr>
                                 <tr>
                                     <td>x_max</td>
-                                    <td>Int</td>
+                                    <td>TinyInt</td>
                                 </tr>
                                 <tr>
                                     <td>y_max</td>
-                                    <td>Int</td>
+                                    <td>TinyInt</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -72,11 +72,11 @@
                         <table class="table table-dark table-striped mb-0">
                             <tbody>
                                 <tr>
-                                    <td>ID</td>
+                                    <td>StrokeID</td>
                                     <td>Int</td>
                                 </tr>
                                 <tr>
-                                    <td>doodle_ID</td>
+                                    <td>DoodleID</td>
                                     <td>Int</td>
                                 </tr>
                             </tbody>
@@ -97,20 +97,20 @@
                         <table class="table table-dark table-striped mb-0">
                             <tbody>
                                 <tr>
-                                    <td>ID</td>
+                                    <td>VectorID</td>
                                     <td>Int</td>
                                 </tr>
                                 <tr>
-                                    <td>stroke_ID</td>
+                                    <td>StrokeID</td>
                                     <td>Int</td>
                                 </tr>
                                 <tr>
                                     <td>x</td>
-                                    <td>Int</td>
+                                    <td>TinyInt</td>
                                 </tr>
                                 <tr>
                                     <td>y</td>
-                                    <td>Int</td>
+                                    <td>TinyInt</td>
                                 </tr>
                                 <tr>
                                     <td>t</td>
@@ -124,26 +124,7 @@
         </div>
     </div>
 
-    <p class="my-3">Basically, a Vector is a Child of a Stroke, which in turn is a Child of a Doodle. That way, for every Doodle, you can iterate through its Strokes and the Vectors associated to this Stroke to, for example, draw the Doodle or feed it to an RNN. Below here is a Flask-SQLAlchemy example which does exactly that:</p>
-
-    <div class="container">
-        <div class="row border rounded my-3">
-            <pre class="text-light">
-
-                db_doodle = db.session.get(Doodle, idx)
-                strokes = db_doodle.strokelist
-                strokelist = []
-                for stroke in strokes:
-                    vectorlist = []
-                    for vector in stroke.vectors:
-                        vectorlist.append({'x': vector.x, 'y': vector.y})
-                    strokelist.append(vectorlist)
-            </pre>
-        </div>
-    </div>
-
-    
-    
+    <p class="my-3">Basically, a Vector is a Child of a Stroke, which in turn is a Child of a Doodle. They are connnected by their respective ID as a foreign Key. That way, for every Doodle, you can iterate through its Strokes and the Vectors associated to this Stroke to, for example, draw the Doodle or feed it to an RNN.</p> 
 
     <p class="my-3">The Wonkydoodles Dataset is more or less consistent with he <a href="https://github.com/googlecreativelab/quickdraw-dataset">"Quick, Draw!" Dataset</a>, so visit them for more information about the data.</p>
 
