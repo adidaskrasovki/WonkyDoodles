@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, flash, redirect, request, send_from_directory
 from wonkydoodles import azureSQL, LocalStore, app, db, model, device, len_db
-from wonkydoodles.models import Doodle, Stroke, Vector
+# from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
 from wonkydoodles.validate import Validate
 
@@ -10,7 +10,7 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = 65536
 import base64
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, UTC
 from random import randint
 import zipfile
 
@@ -101,7 +101,7 @@ def img_handler():
                     Validate.boundaries(img['boundaries'], range(0, 256))):
                         raise Exception("Validation error: Type 1")
                 
-                img['timestamp'] = str(datetime.timestamp(datetime.utcnow()))
+                img['timestamp'] = str(datetime.timestamp(datetime.now(UTC)))
 
                 
                 # Add POSTed .json to Database
