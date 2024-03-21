@@ -117,8 +117,10 @@ def img_handler():
                 vector_query_string = "INSERT INTO Vectors (Vectors.x, Vectors.y, Vectors.t, Vectors.StrokeID) VALUES"
                 vector_query_values = []
 
-                DoodleID = db.query('SELECT MAX(DoodleID) FROM Doodles', [])[0][''] + 1
-                StrokeID = db.query("SELECT MAX(StrokeID) FROM Strokes", [])[0][''] + 1
+                DoodleID = db.query('SELECT MAX(DoodleID) FROM Doodles', [])[0]['']
+                DoodleID = 0 if DoodleID == None else DoodleID + 1
+                StrokeID = db.query("SELECT MAX(StrokeID) FROM Strokes", [])[0]['']
+                StrokeID = 0 if StrokeID == None else StrokeID + 1
 
                 # Add Strokes
                 for stroke_iter in img['strokelist']:
