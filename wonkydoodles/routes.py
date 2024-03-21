@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, flash, redirect, request, send_from_directory
-from wonkydoodles import azureSQL, LocalStore, app, db, model, device, len_db
+from wonkydoodles import azureSQL, LocalStore, app, model, device, len_db#, db
 # from wonkydoodles.models import Doodle, Stroke, Vector
 from wonkydoodles.evaluate import get_category, eval_drawing
 from wonkydoodles.validate import Validate
@@ -105,25 +105,50 @@ def img_handler():
 
                 
                 # Add POSTed .json to Database
-                # Add Doodle
-                db.insert("INSERT INTO dbo.Doodles (dbo.Doodles.category, dbo.Doodles.recognized, dbo.Doodles.timestamp, dbo.Doodles.countrycode, dbo.Doodles.x_max, dbo.Doodles.y_max) VALUES (?, ?, ?, ?, ?, ?)", [img['category'], img['recognized'], img['timestamp'], img['countrycode'], img['boundaries']['x_max'], img['boundaries']['y_max']])
-            
-                # Add Stroke
-                DoodleID = db.query('SELECT MAX(DoodleID) FROM Doodles', [])[0]['']
-                for stroke_iter in img['strokelist']:
-                    db.insert("INSERT INTO Strokes (Strokes.DoodleID) VALUES (?)", [DoodleID])
 
-                    # Add Vector
-                    StrokeID = db.query("SELECT MAX(StrokeID) FROM Strokes", [])[0]['']
+                # Initiate local Variables
+                # Add Doodle
+                doodle_query_string = "INSERT INTO Doodles (Doodles.category, Doodles.recognized, Doodles.timestamp, Doodles.countrycode, Doodles.x_max, Doodles.y_max) VALUES (?, ?, ?, ?, ?, ?)"
+                doodle_query_values = [img['category'], img['recognized'], img['timestamp'], img['countrycode'], img['boundaries']['x_max'], img['boundaries']['y_max']]
+
+                stroke_query_string = "INSERT INTO Strokes (DoodleID) VALUES"
+                stroke_query_values = []
+
+                vector_query_string = "INSERT INTO Vectors (Vectors.x, Vectors.y, Vectors.t, Vectors.StrokeID) VALUES"
+                vector_query_values = []
+
+                DoodleID = db.query('SELECT MAX(DoodleID) FROM Doodles', [])[0][''] + 1
+                StrokeID = db.query("SELECT MAX(StrokeID) FROM Strokes", [])[0][''] + 1
+
+                # Add Strokes
+                for stroke_iter in img['strokelist']:
+                    stroke_query_string += " (?),"
+                    stroke_query_values.append(DoodleID)
+
+                    # Add Vectors
                     for vector_iter in stroke_iter:
+
                         if not Validate.vector(vector_iter, range(0, 256)): raise Exception("Validation error: Type 2")
 
-                        db.insert("INSERT INTO Vectors (Vectors.x, Vectors.y, Vectors.t, Vectors.StrokeID) VALUES (?, ?, ?, ?)", [vector_iter['x'], vector_iter['y'], vector_iter['t'], StrokeID])
+                        vector_query_string += " (?, ?, ?, ?),"
+                        vector_query_values.append(vector_iter['x'])
+                        vector_query_values.append(vector_iter['y'])
+                        vector_query_values.append(vector_iter['t'])
+                        vector_query_values.append(StrokeID)
+                        
+                    StrokeID += 1
+                
+                # Send local Variables to SQL
+                db.insert(doodle_query_string, doodle_query_values)
+                db.insert(stroke_query_string[:-1], stroke_query_values)
+                db.insert(vector_query_string[:-1], vector_query_values)
 
             except:
+                db.cursor.rollback()
                 return "failure"
 
             else:
+                db.cursor.commit()
                 len_db += 1
                 return "success"
 
