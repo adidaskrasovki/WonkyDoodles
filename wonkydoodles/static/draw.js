@@ -348,6 +348,11 @@ function clearpage(){
 };
 
 
+function unactive_btn(e){
+	$(e.currentTarget).trigger("blur");
+};
+
+
 // WARNING!!! IF POSSIBLE, KEEP THIS FUNCTION MINIMIZED/CLOSED AT ALL TIMES IN YOUR IDE!!!!
 // WIP
 // unfortunately, .js does not have an easy way to import other .js files. This is the workaround.
